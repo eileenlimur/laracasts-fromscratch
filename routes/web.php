@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Post;
+use App\Models\Category;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,19 +15,30 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('posts');
+Route::get('/', function () { 
+    // \Illuminate\Support\Facades\DB::listen(function ($query) {
+    //     logger($query->sql, $query->bindings);
+    // });
+    // ^ logs sql queries
+    return view('posts', [
+        'posts' => Post::with('category')->get() // only 2 queries; 1. get posts 2. get categories these posts belong to
+    ]);
 });
 
-Route::get('posts/{post}', function($slug) {
-    $path = __DIR__ . "/../resources/posts/{$slug}.html";
-    if (! file_exists($path)) {
-        return redirect('/');
-        // abort(404);
-        // dd("file does not exist");
-    }
-    $post = file_get_contents($path);
+Route::get('posts/{post:slug}', function(Post $post)  {
+
     return view('post', [
         'post' => $post
+    ]);
+});
+ 
+// })->where('post', '[A-z_\-]+');
+// })->whereAlpha('post');
+// })->whereNumber('post');
+// })->whereAlphaNumberic('post');
+
+Route::get('categories/{category:slug}', function (Category $category) {
+    return view('posts ', [
+        'posts' => $category->posts
     ]);
 });
